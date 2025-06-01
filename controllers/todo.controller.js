@@ -10,4 +10,12 @@ const createTodo = async (req, res, next) => {
   };
   
 
-module.exports = {createTodo}
+  const getTodos = async (req, res, next) => {
+    try {
+        const allTodos = await TodoModel.find({})
+        res.status(200).json(allTodos)
+    } catch(error) {
+        next(error)
+    }
+}
+module.exports = {createTodo, getTodos}
