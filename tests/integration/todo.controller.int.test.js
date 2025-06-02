@@ -4,12 +4,13 @@ const newTodo = require("../mock-data/new-todo.json");
 
 const endpointUrl = "/todos/";
 
-let firstTodo, newTodoId;
+let firstTodo, newTodoId, createdForDelete;
 const testData = {
   title: "Make integration test for PUT",
   done: true
 };
 const notExistingTodoId = "683c4feb83b48baa4c6b2222";
+const delTodoId = "683c4feb83b48baa4c6b5361";
 
 describe(endpointUrl, () => {
   it("POST " + endpointUrl, async () => {
@@ -21,6 +22,7 @@ describe(endpointUrl, () => {
     expect(response.body.done).toBe(newTodo.done);
     newTodoId = response.body._id;
   });
+
   it("should return error 500 on malformed data with POST" + endpointUrl, async () => {
     const response = await request(app)
       .post(endpointUrl)
@@ -31,6 +33,7 @@ describe(endpointUrl, () => {
     });
 
 });
+
   it("GET " + endpointUrl, async () => {
     const response = await request(app).get(endpointUrl)
     expect(response.statusCode).toBe(200)
@@ -49,7 +52,7 @@ describe(endpointUrl, () => {
 
   it("GET todoby id doesn't exist " + endpointUrl + "todoId:", async () => {
     const response = await request(app)
-    .get(endpointUrl + "683c4feb83b48baa4c6b2222");
+    .get(endpointUrl + notExistingTodoId);
     expect(response.statusCode).toBe(404);
   });
 
@@ -65,11 +68,30 @@ describe(endpointUrl, () => {
     expect(res.body.title).toBe(testData.title);
     expect(res.body.done).toBe(testData.done);
   });
+
   it("should return 404 on PUT " + endpointUrl, async () => {
     const res = await request(app)
       .put(endpointUrl + notExistingTodoId)
       .send(testData);
     expect(res.statusCode).toBe(404);
-  });  
-  
+  });
+
+  it("DELETE " + endpointUrl + delTodoId, async () => {
+    const createRes = await request(app).post(endpointUrl).send({
+      title: "deleting todo",
+      done: false,
+    });
+    createdForDelete = createRes.body._id;
+
+    const res = await request(app)
+      .delete(endpointUrl + createdForDelete)
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe("Deleted todo");
+  });
+
+  it("should return 404 on DELETE" + endpointUrl + notExistingTodoId, async () => {
+    const res = await request(app)
+      .delete(endpointUrl + notExistingTodoId)
+    expect(res.statusCode).toBe(404);
+});
 });
